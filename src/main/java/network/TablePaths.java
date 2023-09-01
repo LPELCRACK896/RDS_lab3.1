@@ -13,11 +13,26 @@ public class TablePaths {
     public Path checkPathById(int id){
         return table.get(id);
     }
+
+    public ArrayList<Path> getTable() {
+        return table;
+    }
+
+    public void setTable(ArrayList<Path> table) {
+        this.table = table;
+    }
+
     public Path checkPathByAlias(String alias){
         return checkPathById(parseAlias(alias));
     }
 
+    public int getSize(){
+        return table.size();
+    }
 
+    public void replacePath(int index, Path newPath){
+        this.table.set(index, newPath);
+    }
     public static int parseAlias(String alias) {
         int num = 0;
         for (int i = 0; i < alias.length(); i++) {

@@ -44,11 +44,46 @@ public class Node {
         }
         return num - 1;
     }
+
+    public int sendTableToNeighbors(){
+        int totalUpdates  = 0;
+        for (Path path: table.getTable()){
+            if (path.step == path.end && path.end!=this){
+                totalUpdates += path.step.recieveNeighborTable(table, this);
+            }
+        }
+        return totalUpdates;
+    }
+
+    public int recieveNeighborTable(TablePaths neighborTable, Node node){
+        int totalUpdates = 0;
+        int cost = neighborTable.checkPathById(this.id).cost;
+
+        for (int i = 0; i< neighborTable.getSize(); i++){
+            Path neighborPath = neighborTable.checkPathById(i);
+            Path currentPath = table.checkPathById(i);
+            int total = cost + neighborPath.cost;
+
+            if (neighborPath.step != null){
+                if (total  < currentPath.cost){
+                    Path updatedPath = new Path(node, currentPath.end, total);
+                    this.table.replacePath(i, updatedPath);
+                    totalUpdates++;
+                }
+            }
+        }
+        return  totalUpdates;
+
+
+
+
+
+    }
     public int getId() {
         return id;
     }
-
     public String getAlias() {
         return alias;
     }
+
 }

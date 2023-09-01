@@ -1,13 +1,17 @@
 package network;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 public class Network {
 
     private final int size;
     private int[][] matrix;
-    private ArrayList<Node> nodes;
+    private final ArrayList<Node> nodes;
 
     public Network(int size) {
         this.size = size;
@@ -63,6 +67,28 @@ public class Network {
             }
             nodes.get(i).setNodePaths(table);
         }
+    }
+
+    public int distanceVectorRouting(int iterations, boolean printAfterEveryIteration){
+        iterations = iterations>0 ? iterations : 5;
+        int totalUpdates = 0;
+        int i = 0;
+        while (i<iterations){
+            for (Node node: nodes){
+
+                totalUpdates += node.sendTableToNeighbors();
+            }
+            if (printAfterEveryIteration){
+                System.out.println("Tablas tras iteracion No."+(i+1));
+                for (Node node: nodes){
+                    System.out.println(node+"\n");
+                    System.out.println(node.getTable());
+                }
+            }
+            i++;
+
+        }
+        return  totalUpdates;
     }
 }
 
