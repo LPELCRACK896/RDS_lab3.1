@@ -5,9 +5,11 @@ import java.util.ArrayList;
 public class TablePaths {
 
     private ArrayList<Path> table;
+    private int nodeId;
 
-    public TablePaths (ArrayList<Path> table){
+    public TablePaths (ArrayList<Path> table, int nodeId){
         this.table = table;
+        this.nodeId = nodeId;
     }
 
     public Path checkPathById(int id){
@@ -41,6 +43,9 @@ public class TablePaths {
         return num - 1;
     }
 
+    public int getNodeId(){
+        return this.nodeId;
+    }
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

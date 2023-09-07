@@ -120,6 +120,15 @@ public class Network {
         }
     }
 
+    public void flooding(){
+        int maxHops = size - 1;
+
+        for (Node node: nodes){
+            node.floodingSend(node.getId(), node.getTable(), maxHops);
+        }
+        System.out.println();
+    }
+
 
 }
 

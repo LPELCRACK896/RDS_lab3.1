@@ -1,15 +1,23 @@
 package network;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Node {
     private final int id;
     private final String alias;
     private TablePaths table;
 
+    private ArrayList<Node> neighbors;
+
+    private ArrayList<TablePaths> packagesBuffer;
+    private ArrayList<TablePaths> sentPackages;
+
     public Node (int id){
         this.id = id;
         this.alias = generateAlias(id);
+        packagesBuffer = new ArrayList<>();
+        sentPackages = new ArrayList<>();
     }
 
     @Override
@@ -18,7 +26,8 @@ public class Node {
     }
 
     public void setNodePaths(ArrayList<Path> nodePaths){
-        this.table = new TablePaths(nodePaths);
+        this.table = new TablePaths(nodePaths, this.id);
+        this.neighbors = findOutNeighbors(this.table);
     }
 
     public TablePaths getTable(){
@@ -47,10 +56,8 @@ public class Node {
 
     public int sendTableToNeighbors(){
         int totalUpdates  = 0;
-        for (Path path: table.getTable()){
-            if (path.step == path.end && path.end!=this){
-                totalUpdates += path.step.recieveNeighborTable(table, this);
-            }
+        for (Node neighbor: this.neighbors){
+            totalUpdates += neighbor.recieveNeighborTable(table, this);
         }
         return totalUpdates;
     }
@@ -79,11 +86,54 @@ public class Node {
 
 
     }
+
+    private ArrayList<Node> findOutNeighbors(TablePaths table){
+        ArrayList<Node> neighbors =  new ArrayList<>();
+        for (Path path: table.getTable()){
+            if (path.step == path.end && path.end!=this){
+                neighbors.add(path.step);
+            }
+        }
+        return neighbors;
+    }
     public int getId() {
         return id;
     }
     public String getAlias() {
         return alias;
+    }
+
+
+    public void floodingSend(int senderId, TablePaths nodePackage, int hops){
+        if (hops<1) return;
+        if (sentPackages.contains(nodePackage)){
+            System.out.println("El nodo "+this.alias+" detuvo el envio de un paquete que ya envió con anterioridad: "+nodePackage.getNodeId());
+            return;
+        }
+        sentPackages.add(nodePackage);
+        for (Node neighbor: this.neighbors){
+            if (neighbor.id != senderId){
+                neighbor.floodingRecieve(this.id, nodePackage, hops);
+            }
+        }
+
+
+    }
+
+    public void floodingRecieve(int senderId, TablePaths nodePackage, int hops){
+
+        if (packagesBuffer.contains(nodePackage)){
+            System.out.println("El nodo "+this.alias+" ya recibio el paquete: "+nodePackage.getNodeId());
+            return;
+        }
+        packagesBuffer.add(nodePackage);
+
+        // Reenvio
+        int remainingHops = hops - 1;
+
+        if (remainingHops>0){
+            floodingSend(senderId, nodePackage, remainingHops);
+        }
     }
 
 }
