@@ -1,9 +1,6 @@
 package network;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -90,5 +87,39 @@ public class Network {
         }
         return  totalUpdates;
     }
+
+    public void dijkstra(int startNodeIndex) {
+        int[] distances = new int[size];
+        Arrays.fill(distances, Integer.MAX_VALUE);
+        distances[startNodeIndex] = 0;
+
+        PriorityQueue<Node> pq = new PriorityQueue<>((n1, n2) -> distances[n1.getId()] - distances[n2.getId()]);
+        pq.add(nodes.get(startNodeIndex));
+
+        boolean[] visited = new boolean[size];
+
+        while (!pq.isEmpty()) {
+            Node currentNode = pq.poll();
+            int currentNodeIndex = currentNode.getId();
+
+            if (visited[currentNodeIndex]) continue;
+            visited[currentNodeIndex] = true;
+
+            for (int i = 0; i < size; i++) {
+                if (matrix[currentNodeIndex][i] != Integer.MAX_VALUE && !visited[i] && distances[currentNodeIndex] + matrix[currentNodeIndex][i] < distances[i]) {
+                    distances[i] = distances[currentNodeIndex] + matrix[currentNodeIndex][i];
+                    pq.add(nodes.get(i));
+                }
+            }
+        }
+
+        // Muestra los resultados
+        System.out.println("Resultados del algoritmo " + nodes.get(startNodeIndex).getAlias() + ":");
+        for (int i = 0; i < size; i++) {
+            System.out.println("Distancia hasta el nodo " + nodes.get(i).getAlias() + ": " + (distances[i] == Integer.MAX_VALUE ? "INFINITO" : distances[i]));
+        }
+    }
+
+
 }
 

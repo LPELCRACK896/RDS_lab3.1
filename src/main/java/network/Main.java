@@ -21,6 +21,7 @@ public class Main {
             System.out.println(node.getTable());
         }
 
+        network.dijkstra(0);
 
     }
 }
