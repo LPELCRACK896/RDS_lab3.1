@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class Main {
     public static void main(String[] args) {
-        Network network = new Network(100);
+        Network network = new Network(10);
         ArrayList<Node> nodes = network.getNodes();
         for (Node node: nodes){
             System.out.println(node+"\n");
@@ -21,7 +21,9 @@ public class Main {
             System.out.println(node.getTable());
         }
 
+        network.printTopology();
         network.dijkstra(0);
+        NetworkDiagram.display(network);
 
     }
 }

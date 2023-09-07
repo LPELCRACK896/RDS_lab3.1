@@ -88,6 +88,27 @@ public class Network {
         return  totalUpdates;
     }
 
+    public void printTopology() {
+        System.out.println("Topología de la red:");
+        System.out.print("   ");
+        for (int i = 0; i < size; i++) {
+            System.out.print(nodes.get(i).getAlias() + " ");
+        }
+        System.out.println();
+
+        for (int i = 0; i < size; i++) {
+            System.out.print(nodes.get(i).getAlias() + "  ");
+            for (int j = 0; j < size; j++) {
+                if (matrix[i][j] == Integer.MAX_VALUE) {
+                    System.out.print("∞ ");
+                } else {
+                    System.out.print(matrix[i][j] + " ");
+                }
+            }
+            System.out.println();
+        }
+    }
+
     public void dijkstra(int startNodeIndex) {
         int[] distances = new int[size];
         Arrays.fill(distances, Integer.MAX_VALUE);
