@@ -13,6 +13,10 @@ public class Node {
     private ArrayList<TablePaths> packagesBuffer;
     private ArrayList<TablePaths> sentPackages;
 
+    /**
+     *
+     * @param id number of int.
+     */
     public Node (int id){
         this.id = id;
         this.alias = generateAlias(id);
@@ -25,14 +29,28 @@ public class Node {
         return alias;
     }
 
+    /**
+     *
+     * @param nodePaths
+     */
     public void setNodePaths(ArrayList<Path> nodePaths){
         this.table = new TablePaths(nodePaths, this.id, this.alias);
         this.neighbors = findOutNeighbors(this.table);
     }
 
+    /**
+     *
+     * @return
+     */
     public TablePaths getTable(){
         return table;
     }
+
+    /**
+     *
+     * @param num Number that uses to create alias
+     * @return alias
+     */
     public static String generateAlias(int num) {
         StringBuilder sb = new StringBuilder();
 
@@ -46,6 +64,12 @@ public class Node {
 
         return sb.toString();
     }
+
+    /**
+     *
+     * @param alias The node alias .
+     * @return the Id that correspons to the alias.
+     */
     public static int parseAlias(String alias) {
         int num = 0;
         for (int i = 0; i < alias.length(); i++) {
@@ -54,6 +78,10 @@ public class Node {
         return num - 1;
     }
 
+    /**
+     *
+     * @return Number of updates that made from sending his own table.
+     */
     public int sendTableToNeighbors(){
         int totalUpdates  = 0;
         for (Node neighbor: this.neighbors){
@@ -67,6 +95,12 @@ public class Node {
         return totalUpdates;
     }
 
+    /**
+     *
+     * @param neighborTable Enrouting table that its recieving from a neighbor.
+     * @param node Node that sent the enrouting table.
+     * @return The number of updates that made from getting the enrouting table.
+     */
     public int recieveNeighborTable(TablePaths neighborTable, Node node){
         int totalUpdates = 0;
         int cost = neighborTable.checkPathById(this.id).cost;
@@ -92,6 +126,11 @@ public class Node {
 
     }
 
+    /**
+     *
+     * @param table The first version of table that only contains paths to the neighbours
+     * @return Arraylist of the nodes that are neighbors of the current node.
+     */
     private ArrayList<Node> findOutNeighbors(TablePaths table){
         ArrayList<Node> neighbors =  new ArrayList<>();
         for (Path path: table.getTable()){
@@ -101,14 +140,30 @@ public class Node {
         }
         return neighbors;
     }
+
+    /**
+     *
+     * @return Returns attirbute id.
+     */
     public int getId() {
         return id;
     }
+
+    /**
+     *
+     * @return Returns attribute alias.
+     */
     public String getAlias() {
         return alias;
     }
 
-
+    /**
+     *
+     * @param senderId Node's id that sends the package.
+     * @param nodePackage Resource sent. Limits to sends routing tables.
+     * @param hops Remaining hops that the package is allowed to be send. Avoiding infinite package sending.
+     * @param countHops Number hop that took to get to this point.
+     */
     public void floodingSend(int senderId, TablePaths nodePackage, int hops, int countHops){
         if (hops<1) return;
         if (sentPackages.contains(nodePackage)){
@@ -131,6 +186,13 @@ public class Node {
 
     }
 
+    /**
+     *
+     * @param senderId Node's id that sends the package.
+     * @param nodePackage Resource sent. Limits to sends routing tables.
+     * @param hops Remaining hops that the package is allowed to be send. Avoiding infinite package sending.
+     * @param countHop Number hop that took to get to this point.
+     */
     public void floodingRecieve(int senderId, TablePaths nodePackage, int hops, int countHop){
         countHop += 1;
 

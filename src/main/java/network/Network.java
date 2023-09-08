@@ -10,6 +10,10 @@ public class Network {
     private int[][] matrix;
     private final ArrayList<Node> nodes;
 
+    /**
+     *
+     * @param size
+     */
     public Network(int size) {
         this.size = size;
         this.nodes = new ArrayList<>();
@@ -17,6 +21,10 @@ public class Network {
 
     }
 
+    /**
+     *
+     * @return
+     */
     public int getSize() {
         return size;
     }
