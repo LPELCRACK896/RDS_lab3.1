@@ -15,8 +15,9 @@ public class Main {
             System.out.println("Actualizaciones: "+updates);
         }
 
-
-        //network.dijkstra(0);
+        network.printTopology();
+        network.dijkstra(0);
+        NetworkDiagram.display(network);
 
     }
 }
