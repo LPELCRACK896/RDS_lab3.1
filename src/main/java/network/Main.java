@@ -14,10 +14,6 @@ public class Main {
             updates = network.distanceVectorRouting(1, false);
             System.out.println("Actualizaciones: "+updates);
         }
-        for (Node node: nodes){
-            System.out.println(node+"\n");
-            System.out.println(node.getTable());
-        }
 
         network.printTopology();
         network.dijkstra(0);

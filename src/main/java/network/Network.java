@@ -145,7 +145,7 @@ public class Network {
         int maxHops = size - 1;
 
         for (Node node: nodes){
-            node.floodingSend(node.getId(), node.getTable(), maxHops);
+            node.floodingSend(node.getId(), node.getTable(), maxHops, 1);
         }
         System.out.println();
     }

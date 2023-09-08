@@ -6,10 +6,12 @@ public class TablePaths {
 
     private ArrayList<Path> table;
     private int nodeId;
+    private String nodeAlias;
 
-    public TablePaths (ArrayList<Path> table, int nodeId){
+    public TablePaths (ArrayList<Path> table, int nodeId, String nodeAlias){
         this.table = table;
         this.nodeId = nodeId;
+        this.nodeAlias = nodeAlias;
     }
 
     public Path checkPathById(int id){
@@ -35,6 +37,15 @@ public class TablePaths {
     public void replacePath(int index, Path newPath){
         this.table.set(index, newPath);
     }
+
+    public String getNodeAlias() {
+        return nodeAlias;
+    }
+
+    public void setNodeAlias(String nodeAlias) {
+        this.nodeAlias = nodeAlias;
+    }
+
     public static int parseAlias(String alias) {
         int num = 0;
         for (int i = 0; i < alias.length(); i++) {
