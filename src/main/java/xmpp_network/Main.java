@@ -21,7 +21,7 @@ public class Main {
         XMPPNode node1 = new XMPPNode("gon20008", "admin123", topologyConfig, namesConfig);
 
         XMPPNode node2 = new XMPPNode("test20001", "admin123", topologyConfig, namesConfig);
-
+        System.out.println(System.currentTimeMillis());
         node1.ping("test20001");
 
         node1.logout();
