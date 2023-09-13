@@ -9,5 +9,24 @@ public class Packet {
         this.to = to;
     }
 
+    public Packet(){
+        this.from = null;
+        this.to = null;
+    }
 
+    public String getFrom() {
+        return from;
+    }
+
+    public void setFrom(String from) {
+        this.from = from;
+    }
+
+    public String getTo() {
+        return to;
+    }
+
+    public void setTo(String to) {
+        this.to = to;
+    }
 }

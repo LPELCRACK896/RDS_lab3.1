@@ -11,14 +11,10 @@ import org.jivesoftware.smack.chat2.ChatManager;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jxmpp.stringprep.XmppStringprepException;
-import org.jivesoftware.smackx.ping.PingManager;
-import org.jxmpp.jid.Jid;
 import org.jxmpp.jid.impl.JidCreate;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class XMPPNode {
     private String JID;
@@ -27,7 +23,7 @@ public class XMPPNode {
     private boolean authenticated;
     private HashMap<String, List<String>> topologyConfig;
     private HashMap<String, String> namesConfig;
-
+    private InfoPacket infoPacket;
     private ChatManager chatManager;
     private AbstractXMPPConnection connection;
     private boolean isLoggedIn;
@@ -50,9 +46,26 @@ public class XMPPNode {
         this.chatManager = null;
         this.isLoggedIn = false;
 
+        Set<String> networkMembers = namesConfig.keySet();
+        ArrayList<String> arraylistNetworkMembers = new ArrayList<String>(networkMembers);
+
+        this.infoPacket = new InfoPacket();
+        this.infoPacket.createDefault(arraylistNetworkMembers);
+
+
         if (connection != null) {
             login(JID, password);
             this.chatManager = ChatManager.getInstanceFor(connection);
+        }
+
+    }
+
+    public void configureNode(){
+        for (String neighbor: neighbors){
+            String destination = getJIDFromAlias(neighbor);
+
+            EchoPacket echoPacket = new EchoPacket(JID, destination);
+            sendMessage(destination, echoPacket.toString());
         }
     }
 
@@ -75,7 +88,7 @@ public class XMPPNode {
             }
 
         }
-        return  null;
+        return null;
 
     }
     public void login(String JID, String password) {
@@ -113,7 +126,7 @@ public class XMPPNode {
                     .setHost("146.190.213.97")
                     .setPort(5222)
                     .setSecurityMode(ConnectionConfiguration.SecurityMode.disabled)
-                    .enableDefaultDebugger()
+                    //.enableDefaultDebugger()
                     .build();
             System.out.println("Termina creacion de conexion");
             AbstractXMPPConnection connection = new XMPPTCPConnection(config);
@@ -136,13 +149,69 @@ public class XMPPNode {
     }
 
     private void executeResponse(JsonObject response) {
-        if(response.get("type").getAsString().equals("message")) {
-            System.out.println(this.topologyConfig.toString());
+        System.out.println();
+        String type = response.get("type").getAsString();
+        JsonObject payload;
+
+        switch (type) {
+            case "echo" -> {
+                System.out.println("Recibio echo "+JID);
+                echoResponseHandler(response);
+
+            }
+            case "message" -> {
+                System.out.println("Recibio message "+JID);
+                messageResponseHandler(response);
+            }
+            case "info" -> {
+                System.out.println("Recibio info "+JID);
+                infoResponseHandler(response);
+            }
         }
+
+    }
+    private String getNameFromJIDWithDomain(String string){
+        String[] stringSplited  = string.split("@", 2);
+        return stringSplited[0];
+    }
+    private void echoResponseHandler(JsonObject response){
+        System.out.println(response.toString());
+        JsonObject payload = response.get("payload").getAsJsonObject();
+        JsonObject headers = response.get("headers").getAsJsonObject();
+
+        String sender = getNameFromJIDWithDomain(headers.get("from").getAsString());
+        String reciever = getNameFromJIDWithDomain(headers.get("to").getAsString());
+
+
+
+        boolean hasTimestamp2 = payload.has("timestamp2");
+        // Esta recibiendo una respuesta ping
+        if (hasTimestamp2) {
+            long timeStamp1 = payload.get("timestamp1").getAsLong();
+            long timeStamp2 = payload.get("timestamp2").getAsLong();
+            long difference = timeStamp2 - timeStamp1;
+            String alias = getAliasFromJID(sender);
+            boolean isNeighbor =  neighbors.contains(alias);
+            this.infoPacket.editARoute(alias, alias, difference, isNeighbor);
+            return;
+        }
+
+        long timeStamp1 = payload.get("timestamp1").getAsLong();
+        EchoPacket echoPacket = new EchoPacket(reciever, sender, timeStamp1);
+        sendMessage(sender, echoPacket.toString());
+
     }
 
+    private void infoResponseHandler(JsonObject response){
+
+    }
+
+    private void messageResponseHandler(JsonObject response){
+
+    }
 
     public void sendMessage(String toJID, String messageContent) {
+
         toJID = toJID+"@alumchat.xyz";
         if (chatManager == null) {
             ChatManager.getInstanceFor(connection);
@@ -154,4 +223,26 @@ public class XMPPNode {
             System.err.println("Error sending message: " + e.getMessage());
         }
     }
+
+    public String getJIDFromAlias(String alias){
+        for (Map.Entry<String, String> entry : namesConfig.entrySet()) {
+            if (entry.getKey().equals(alias)){
+                return getNameFromJIDWithDomain(entry.getValue());
+            }
+        }
+        return null;
+
+    }
+
+    public String getAliasFromJID(String JID){
+        JID =!JID.contains("@alumchat.xyz") ? JID+"@alumchat.xyz": JID;
+        for (Map.Entry<String, String> entry : namesConfig.entrySet()) {
+            if (entry.getValue().equals(JID)){
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+
 }

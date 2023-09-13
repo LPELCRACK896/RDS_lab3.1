@@ -1,11 +1,11 @@
 package xmpp_network;
 
-public class DataPacket extends Packet{
+public class MessagePacket extends Packet{
 
     private String body;
     private String messageId;
 
-    public DataPacket(String from, String to) {
+    public MessagePacket(String from, String to) {
         super(from, to);
     }
 
