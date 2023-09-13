@@ -114,7 +114,17 @@ public class XMPPNode {
                     //.enableDefaultDebugger()
                     .build();
             System.out.println("Termina creacion de conexion");
-            return new XMPPTCPConnection(config);
+            AbstractXMPPConnection connection = new XMPPTCPConnection(config);
+            try {
+                connection.connect();
+                ChatManager chatManager = ChatManager.getInstanceFor(connection);
+                chatManager.addIncomingListener((from, message, chat) -> {
+                    String response = message.getBody();
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return connection;
         } catch (XmppStringprepException e) {
             System.err.println("Error creating XMPP connection: " + e.getMessage());
             return null;  // or you can throw a RuntimeException to terminate the program
