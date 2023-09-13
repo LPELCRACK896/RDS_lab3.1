@@ -14,5 +14,10 @@ public class InfoPacket extends Packet{
         super(from, to);
         this.routingTable = routingTable;
     }
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 }
 

@@ -4,6 +4,7 @@ import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.chat2.Chat;
 import org.jivesoftware.smack.chat2.ChatManager;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
@@ -111,7 +112,7 @@ public class XMPPNode {
                     .setHost("146.190.213.97")
                     .setPort(5222)
                     .setSecurityMode(ConnectionConfiguration.SecurityMode.disabled)
-                    //.enableDefaultDebugger()
+                    .enableDefaultDebugger()
                     .build();
             System.out.println("Termina creacion de conexion");
             AbstractXMPPConnection connection = new XMPPTCPConnection(config);
@@ -132,24 +133,16 @@ public class XMPPNode {
     }
 
 
-    public void ping(String toJidString) {
-        if (connection != null && connection.isConnected()) {
-            PingManager pingManager = PingManager.getInstanceFor(connection);
-
-            try {
-                Jid toJid = JidCreate.from(toJidString);  // Convert String to Jid
-
-                boolean pingSuccess = pingManager.ping(toJid);
-                if (pingSuccess) {
-                    System.out.println("Ping successful!");
-                } else {
-                    System.out.println("Ping failed!");
-                }
-            } catch (Exception e) {
-                System.err.println("Error pinging: " + e.getMessage());
-            }
-        } else {
-            System.out.println("No active connection to send a ping.");
+    public void sendMessage(String toJID, String messageContent) {
+        toJID = toJID+"@alumchat.xyz";
+        if (chatManager == null) {
+            ChatManager.getInstanceFor(connection);
+        }
+        try {
+            Chat chat = chatManager.chatWith(JidCreate.entityBareFrom(toJID));
+            chat.send(messageContent);
+        } catch (SmackException.NotConnectedException | InterruptedException | XmppStringprepException e) {
+            System.err.println("Error sending message: " + e.getMessage());
         }
     }
 }

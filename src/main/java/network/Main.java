@@ -11,7 +11,7 @@ public class Main {
 
         int updates = 1;
         while (updates!=0) {
-            updates = network.distanceVectorRouting(1, false);
+            updates = network.distanceVectorRouting(1, true);
             System.out.println("Actualizaciones: "+updates);
         }
 
