@@ -1,38 +1,24 @@
 package xmpp_network;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class InfoPacket extends Packet{
     private List<Route> routingTable;
     private int hopCount;
+    private String aliasOwner;
 
 
-    public InfoPacket(){
-        super();
-        this.hopCount = 1;
-    }
-    public InfoPacket(String from, String to) {
-        super(from, to);
-        this.hopCount = 1;
-        routingTable = new ArrayList<Route>();
-    }
-    public InfoPacket(String from, String to, List<Route> routingTable) {
-        super(from, to);
-        this.hopCount = 1;
-        this.routingTable = routingTable;
-    }
-
-
-    public InfoPacket(String from, String to, List<Route> routingTable, int hopCount) {
-        super(from, to);
-        this.routingTable = routingTable;
-        this.hopCount = hopCount;
-    }
-
-    public InfoPacket(String from){
+    public InfoPacket(String from, String aliasOwner){
         super(from);
+        this.aliasOwner = aliasOwner;
+        routingTable = new ArrayList<Route>();
+
     }
+
+
 
     public void changeRemitentAndDestination(String from, String to){
         this.from = from;
@@ -42,7 +28,12 @@ public class InfoPacket extends Packet{
     public void createDefault(ArrayList<String> nodes){
         ArrayList<Route> routingTable = new ArrayList<Route>();
         for (String node: nodes){
-            routingTable.add(new Route(node));
+            if (node.equals(this.aliasOwner)){
+                // Ruta hacia si mismo
+                routingTable.add(new Route(node, node, 0, true));
+            }else{
+                routingTable.add(new Route(node));
+            }
         }
         this.routingTable = routingTable;
     }
@@ -101,6 +92,41 @@ public class InfoPacket extends Packet{
 
         jsonStrinfied.append("}");
         return jsonStrinfied.toString();
+    }
+
+    public int updateTable(HashMap<String, Long> othersTable, String aliasTableOwner){
+        int totalUpdates = 0;
+        Route routeToOwner = findRoute(aliasTableOwner);
+        if (routeToOwner.isExist()) {
+            long costToOwner = routeToOwner.getCost();
+            String nextHop = routeToOwner.getNextHop();
+            for (Map.Entry<String, Long> entry : othersTable.entrySet()) {
+                Route route = findRoute(entry.getKey());
+                if (!route.isExist()) {
+                    totalUpdates += 1;
+                    route.setCost(entry.getValue() + costToOwner);
+                    route.setNextHop(nextHop);
+                    route.setExist(true);
+                }
+                else {
+                    long currentCost = route.getCost();
+                    long newCost = costToOwner + entry.getValue();
+
+                    if (newCost<currentCost){
+                        route.setCost(newCost);
+                        route.setNextHop(nextHop);
+                        totalUpdates += 1;
+                    }
+                }
+
+            }
+        }
+        else{
+            System.err.println("No es posible utilizar la tabla para actualizar");
+        }
+
+
+        return totalUpdates;
     }
 
 

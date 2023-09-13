@@ -1,5 +1,6 @@
 package xmpp_network;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.jivesoftware.smack.AbstractXMPPConnection;
@@ -49,7 +50,7 @@ public class XMPPNode {
         Set<String> networkMembers = namesConfig.keySet();
         ArrayList<String> arraylistNetworkMembers = new ArrayList<String>(networkMembers);
 
-        this.infoPacket = new InfoPacket(getNameFromJIDWithDomain(this.JID));
+        this.infoPacket = new InfoPacket(getNameFromJIDWithDomain(this.JID), getAliasFromJID(this.JID));
         this.infoPacket.createDefault(arraylistNetworkMembers);
 
 
@@ -67,6 +68,14 @@ public class XMPPNode {
             EchoPacket echoPacket = new EchoPacket(JID, destination);
             sendMessage(destination, echoPacket.toString());
         }
+    }
+
+    public void sendInfoToNeighbors(){
+        for (String neighbor: neighbors){
+            String destination = getJIDFromAlias(neighbor);
+            sendInfo(destination, 1);
+        }
+
     }
 
 
@@ -182,8 +191,6 @@ public class XMPPNode {
         String sender = getNameFromJIDWithDomain(headers.get("from").getAsString());
         String reciever = getNameFromJIDWithDomain(headers.get("to").getAsString());
 
-
-
         boolean hasTimestamp2 = payload.has("timestamp2");
         // Esta recibiendo una respuesta ping
         if (hasTimestamp2) {
@@ -202,7 +209,44 @@ public class XMPPNode {
 
     }
 
+    private void reSendInfo(InfoPacket infoPacketR, String toJID, int hopCount){
+        infoPacketR.setTo(toJID);
+        infoPacketR.setHopCount(hopCount);
+        sendMessage(getNameFromJIDWithDomain(toJID), infoPacketR.toString());
+    }
+
+    private HashMap<String, Long> parseJsonTable(JsonObject payload){
+        HashMap<String, Long> hashJsonTable =  new HashMap<String, Long>();
+        for (Map.Entry<String, String> entry: namesConfig.entrySet()){
+            if (payload.has(entry.getKey())){
+                hashJsonTable.put(entry.getKey(), payload.get(entry.getKey()).getAsLong());
+            }
+
+        }
+
+        return hashJsonTable;
+    }
     private void infoResponseHandler(JsonObject response){
+
+        String from = response.get("headers").getAsJsonObject().get("from").getAsString();
+        String to = response.get("headers").getAsJsonObject().get("to").getAsString();
+        int hopCount = response.get("headers").getAsJsonObject().get("hop_count").getAsInt();
+
+        HashMap<String, Long> othersTable = parseJsonTable(response.get("payload").getAsJsonObject());
+        String aliasFrom = getAliasFromJID(from);
+        infoPacket.updateTable(othersTable, aliasFrom);
+        hopCount -= 1;
+        if (hopCount>0){
+            for (String neighbor: neighbors){
+                String neighborJID = getJIDFromAlias(neighbor);
+                if (!from.equals(neighborJID)){
+                    sendInfo(neighborJID, hopCount);
+                }
+
+
+            }
+        }
+        System.out.println(response);
 
     }
 
@@ -252,5 +296,9 @@ public class XMPPNode {
         return null;
     }
 
-
+    public void sendInfo(String toJID, int hopCount){
+        infoPacket.setTo(toJID);
+        infoPacket.setHopCount(hopCount);
+        sendMessage(getNameFromJIDWithDomain(toJID), infoPacket.toString());
+    }
 }
