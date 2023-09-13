@@ -1,5 +1,7 @@
 package xmpp_network;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.SmackException;
@@ -13,7 +15,6 @@ import org.jxmpp.jid.Jid;
 import org.jxmpp.jid.impl.JidCreate;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -120,6 +121,8 @@ public class XMPPNode {
                 ChatManager chatManager = ChatManager.getInstanceFor(connection);
                 chatManager.addIncomingListener((from, message, chat) -> {
                     String response = message.getBody();
+                    JsonObject newJSON = JsonParser.parseString(response).getAsJsonObject();
+                    this.executeResponse(newJSON);
                 });
             } catch (Exception e) {
                 e.printStackTrace();
@@ -128,6 +131,12 @@ public class XMPPNode {
         } catch (XmppStringprepException e) {
             System.err.println("Error creating XMPP connection: " + e.getMessage());
             return null;  // or you can throw a RuntimeException to terminate the program
+        }
+    }
+
+    private void executeResponse(JsonObject response) {
+        if(response.get("type").getAsString().equals("message")) {
+            System.out.println(this.topologyConfig.toString());
         }
     }
 
