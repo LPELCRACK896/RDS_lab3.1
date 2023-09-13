@@ -36,3 +36,7 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+/src/java/xmpp_network/tests.java
+
+/src/main/java/xmpp_network/tests.java
