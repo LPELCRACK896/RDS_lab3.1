@@ -22,7 +22,7 @@ public class EchoPacket extends Packet{
     public String toStringOnTwoTimestamps(){
         return "{" +
                 "\"type\": \"echo\""+",\n"+
-                "\"headers\": {\"from\":\""+super.from+"\",\"to\":"+super.to+"},\n"+
+                "\"headers\": {\"from\":\""+super.from+"\",\"to\":\""+super.to+"\"},\n"+
                 "\"payload\": {\"timestamp1\": "+timestamp1+", \"timestamp2\": "+timestamp2+"}"+
                 '}';
     }

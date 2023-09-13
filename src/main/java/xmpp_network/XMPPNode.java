@@ -49,7 +49,7 @@ public class XMPPNode {
         Set<String> networkMembers = namesConfig.keySet();
         ArrayList<String> arraylistNetworkMembers = new ArrayList<String>(networkMembers);
 
-        this.infoPacket = new InfoPacket();
+        this.infoPacket = new InfoPacket(getNameFromJIDWithDomain(this.JID));
         this.infoPacket.createDefault(arraylistNetworkMembers);
 
 
@@ -222,6 +222,14 @@ public class XMPPNode {
         } catch (SmackException.NotConnectedException | InterruptedException | XmppStringprepException e) {
             System.err.println("Error sending message: " + e.getMessage());
         }
+    }
+
+    public InfoPacket getInfoPacket() {
+        return infoPacket;
+    }
+
+    public void setInfoPacket(InfoPacket infoPacket) {
+        this.infoPacket = infoPacket;
     }
 
     public String getJIDFromAlias(String alias){

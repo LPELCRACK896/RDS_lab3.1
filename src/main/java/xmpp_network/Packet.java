@@ -14,6 +14,9 @@ public class Packet {
         this.to = null;
     }
 
+    public Packet(String from){
+        this.from = from;
+    }
     public String getFrom() {
         return from;
     }
