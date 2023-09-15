@@ -30,6 +30,11 @@ public class XMPPNetwork {
     }
 
     private void linkStateRouting(){
+
+        for (XMPPNode node: xmppNodes){
+            node.flood();
+        }
+        System.out.println();
         //
 
     }

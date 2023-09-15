@@ -29,7 +29,7 @@ public class XMPPNode {
     private boolean isLoggedIn;
     private MessagePacket msgPacket;
     private HashMap<String, InfoPacket> tablesBuffer;
-    private HashMap<String, String> dijkstrTable;
+    private HashMap<String, String> dijkstraTable;
 
     private String mode;
 
@@ -49,7 +49,7 @@ public class XMPPNode {
         this.chatManager = null;
         this.isLoggedIn = false;
         this.tablesBuffer = new HashMap<String, InfoPacket>();
-        this.dijkstrTable = new HashMap<String, String>();
+        this.dijkstraTable = new HashMap<String, String>();
         this.mode = mode; // Either "dv" or "lsr"
 
         Set<String> networkMembers = namesConfig.keySet();
@@ -269,7 +269,7 @@ public class XMPPNode {
             for (String neighbor: neighbors){
                 String neighborJID = getJIDFromAlias(neighbor);
                 if (!from.equals(neighborJID)){
-                    sendInfoPackage(neighborJID, hopCount, false);
+                    sendOthersInfoPackage(recievedPacket, neighborJID, hopCount, false);
                 }
 
 
@@ -367,6 +367,16 @@ public class XMPPNode {
         }
         sendMessageUsingTable(getNameFromJIDWithDomain(toJID), infoPacket.toString());
 
+    }
+
+    public void sendOthersInfoPackage(InfoPacket infoPacket, String toJID, int hopCount, boolean useRouting){
+        infoPacket.setTo(toJID);
+        infoPacket.setHopCount(hopCount);
+        if (!useRouting) {
+            sendMessage(getNameFromJIDWithDomain(toJID), infoPacket.toString());
+            return;
+        }
+        sendMessageUsingTable(getNameFromJIDWithDomain(toJID), infoPacket.toString());
     }
 
     public void sendMessagePackage(String toJID, int hopCount, String body, boolean useRouting){
