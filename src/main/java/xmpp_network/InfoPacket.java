@@ -19,10 +19,30 @@ public class InfoPacket extends Packet{
     }
 
 
-
     public void changeRemitentAndDestination(String from, String to){
         this.from = from;
         this.to = to;
+    }
+
+    public void createFromHash(String originalOwner, ArrayList<String> nodes, HashMap<String, Long> existing){
+        ArrayList<Route> routingTable = new ArrayList<Route>();
+
+        for (String node: nodes){
+            if (existing.containsKey(node)){
+                routingTable.add(new Route(node, originalOwner, existing.get(node), true));
+            }
+            else{
+                if (node.equals(this.aliasOwner)){
+                    // Ruta hacia si mismo
+                    routingTable.add(new Route(node, node, 0, true));
+                }else{
+                    routingTable.add(new Route(node));
+                }
+            }
+
+        }
+        this.routingTable = routingTable;
+
     }
 
     public void createDefault(ArrayList<String> nodes){
@@ -125,7 +145,7 @@ public class InfoPacket extends Packet{
             System.err.println("No es posible utilizar la tabla para actualizar");
         }
 
-
+        System.out.println("La tabla de "+this.aliasOwner+ " actualizo "+totalUpdates+" en su tabla");
         return totalUpdates;
     }
 
@@ -138,5 +158,45 @@ public class InfoPacket extends Packet{
                 "\"payload\": "+stringifiedJSONRoutingTable()+
                 "\n}";
     }
+
+
+
+
+    public boolean isTheSame(InfoPacket other){
+
+        if (!this.from.equals(other.getFrom())){
+            return false;
+        }
+        for (Route route:routingTable){
+            String alias = route.getEnd();
+            Route otherRoute = other.findRoute(alias);
+
+            if (otherRoute==null){
+                return false;
+            }
+            if (!route.isExist()){
+                if (otherRoute.isExist()){
+                    return true;
+                }
+            }
+            else if (!route.isTheSame(otherRoute)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static HashMap<String, Long> getSimplifiedTable(List<Route> routingTable){
+        HashMap<String, Long> simplifiedTable = new HashMap<String, Long>();
+
+        for (Route route: routingTable){
+            simplifiedTable.put(route.getEnd(), route.getCost());
+        }
+        return simplifiedTable;
+
+    }
+
 }
+
+
 

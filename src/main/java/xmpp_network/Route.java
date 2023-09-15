@@ -63,5 +63,9 @@ public class Route {
     public void setExist(boolean exist) {
         this.exist = exist;
     }
+
+    public boolean isTheSame(Route other){
+        return other.getCost()==this.cost && this.end.equals(other.getEnd()) && this.nextHop.equals(other.getNextHop());
+    }
 }
 

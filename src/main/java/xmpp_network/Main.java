@@ -13,9 +13,12 @@ public class Main {
 
         HashMap<String, List<String>> topologyConfig = Utils.getTopologyConfig();
         HashMap<String, String> namesConfig  = Utils.getNamesConfig();
+        String mode = "ds";
 
-        XMPPNode node2 = new XMPPNode("test20001", "admin123", topologyConfig, namesConfig);
+
+        XMPPNode node2 = new XMPPNode("test20001", "admin123", topologyConfig, namesConfig, mode);
         System.out.println(System.currentTimeMillis());
+
 
         while (true) {
             System.out.print("Ingrese la tecla q para salir: ");
