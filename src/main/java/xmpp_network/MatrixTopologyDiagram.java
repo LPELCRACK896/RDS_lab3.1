@@ -2,14 +2,42 @@ package xmpp_network;
 
 import javax.swing.*;
 import java.awt.*;
-
+/**
+ * @author LPELCRACK896
+ */
 public class MatrixTopologyDiagram extends JPanel {
     private final MatrixTopology topology;
 
     public MatrixTopologyDiagram(MatrixTopology topology) {
         this.topology = topology;
     }
+    /*
+     * #################
+     * #################
+     * MAIN METHODS
+     * #################
+     * #################
+     */
 
+    /**
+     * Displays the network topology as a graph.
+     */
+    public void displayTopology() {
+        MatrixTopologyDiagram.display(topology);
+    }
+
+    /*
+     * #################
+     * #################
+     * OVERRIDE JPANEL
+     * #################
+     * #################
+     */
+
+    /**
+     * To draw the graph.
+     * @param g the <code>Graphics</code> object to protect
+     */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -45,7 +73,18 @@ public class MatrixTopologyDiagram extends JPanel {
             }
         }
     }
+    /*
+     * #################
+     * #################
+     * STATIC METHODS
+     * #################
+     * #################
+     */
 
+    /**
+     * In a JPanel displays the network graph representation.
+     * @param topology the topology as reference.
+     */
     public static void display(MatrixTopology topology) {
         JFrame frame = new JFrame("Matrix Topology Diagram");
         MatrixTopologyDiagram diagram = new MatrixTopologyDiagram(topology);
@@ -53,11 +92,6 @@ public class MatrixTopologyDiagram extends JPanel {
         frame.setSize(800, 800);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
-    }
-
-    // Add this method in your MatrixTopology class
-    public void displayTopology() {
-        MatrixTopologyDiagram.display(topology);
     }
 }
 

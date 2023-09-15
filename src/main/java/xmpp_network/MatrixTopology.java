@@ -6,12 +6,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Comparator;
-
+/**
+ * @author LPELCRACK896
+ */
 public class MatrixTopology {
     public long[][] matrix;
     public HashMap<String, Integer> nodeToIndex;
     public HashMap<Integer, String> indexToNode;
 
+    /**
+     * Constructor.
+     * @param nodes network members.
+     */
     public MatrixTopology(ArrayList<String> nodes) {
         int size = nodes.size();
         matrix = new long[size][size];
@@ -25,7 +31,18 @@ public class MatrixTopology {
             indexToNode.put(i, nodes.get(i));
         }
     }
-
+    /*
+     * #################
+     * #################
+     * MAIN METHODS
+     * #################
+     * #################
+     */
+    /**
+     * For a certain node add connections to some others with its costs into an adjacency matrix.
+     * @param node Node that has the connections.
+     * @param connections hashmap with the connections, alias as key and cost as value.
+     */
     public void establishConnections(String node, HashMap<String, Long> connections) {
         int fromIndex = nodeToIndex.get(node);
 
@@ -35,6 +52,11 @@ public class MatrixTopology {
         }
     }
 
+    /**
+     * Gets for a certain node the best paths (according to dijkstra) to the rest of the nodes.
+     * @param node node where all paths start.
+     * @return Hashmap containing target node alias as key and the list of the path as value.
+     */
     public HashMap<String, List<String>> dijkstra(String node) {
         int sourceIndex = nodeToIndex.get(node);
         long[] distances = new long[matrix.length];
@@ -76,29 +98,5 @@ public class MatrixTopology {
         }
 
         return result;
-    }
-
-    public static void main(String[] args) {
-        System.out.println("hola");
-        ArrayList<String> nodes = new ArrayList<>(Arrays.asList("A", "B", "C"));
-        MatrixTopology topo = new MatrixTopology(nodes);
-
-        HashMap<String, Long> connections = new HashMap<>();
-        connections.put("B", 1L);
-        connections.put("C", 4L);
-        topo.establishConnections("A", connections);
-
-        connections.clear();
-        connections.put("C", 2L);
-        //connections.put("D", 5L);
-        topo.establishConnections("B", connections);
-
-        connections.clear();
-        //connections.put("D", 3L);
-        //topo.establishConnections("C", connections);
-
-        HashMap<String, List<String>> result = topo.dijkstra("A");
-        System.out.println(result);
-         (new MatrixTopologyDiagram(topo)).displayTopology();
     }
 }

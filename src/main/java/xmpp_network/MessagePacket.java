@@ -1,44 +1,84 @@
 package xmpp_network;
-
+/**
+ * @author LPELCRACK896
+ */
 public class MessagePacket extends Packet{
 
     private String body;
-    private String messageId;
     private int hopCount;
 
+    /**
+     * Constructor.
+     * @param from Sender JID
+     * @param to Receiver JID
+     * @param body Message content.
+     * @param hopCount Number of hops so far.
+     */
     public MessagePacket(String from, String to, String body, int hopCount) {
         super(from, to);
         this.body = body;
         this.hopCount = hopCount;
     }
+
+    /**
+     * Constructor.
+     * @param from Sender JID.
+     */
     public MessagePacket(String from){
         super(from);
     }
+    /*
+     * #################
+     * #################
+     * SETTERS AND GETTERS
+     * #################
+     * #################
+     */
 
+    /**
+     * GET Hop count
+     * @return attr: hop count.
+     */
     public int getHopCount() {
         return hopCount;
     }
 
+    /**
+     * SETTER Hop count
+     * @param hopCount new hop count.
+     */
     public void setHopCount(int hopCount) {
         this.hopCount = hopCount;
     }
 
+    /**
+     * GET body
+     * @return attr: body
+     */
     public String getBody() {
         return body;
     }
 
+    /**
+     * SETTER body
+     * @param body new body
+     */
     public void setBody(String body) {
         this.body = body;
     }
 
-    public String getMessageId() {
-        return messageId;
-    }
+    /*
+     * #################
+     * #################
+     * OVERRIDE OBJECT
+     * #################
+     * #################
+     */
 
-    public void setMessageId(String messageId) {
-        this.messageId = messageId;
-    }
-
+    /**
+     * toString
+     * @return JSON Strigified version of message package.
+     */
     @Override
     public String toString() {
         return "{" +
