@@ -46,8 +46,13 @@ public class XMPPNetwork {
      * Routes the network using link state routing
      */
     private void linkStateRouting(){
+        // Flooding
         for (XMPPNode node: xmppNodes){
             node.flood();
+        }
+        nothingForAWhile(5000);
+        for (XMPPNode node: xmppNodes){
+            node.setUpDijkstraTable();
         }
     }
 

@@ -175,7 +175,9 @@ public class InfoPacket extends Packet{
         HashMap<String, Long> simplifiedTable = new HashMap<String, Long>();
 
         for (Route route: routingTable){
-            simplifiedTable.put(route.getEnd(), route.getCost());
+            if (route.isExist()){
+                simplifiedTable.put(route.getEnd(), route.getCost());
+            }
         }
         return simplifiedTable;
 

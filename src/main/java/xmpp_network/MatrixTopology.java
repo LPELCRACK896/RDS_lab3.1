@@ -96,7 +96,7 @@ public class MatrixTopology {
                 }
             }
         }
-
+        System.out.println(result);
         return result;
     }
 }

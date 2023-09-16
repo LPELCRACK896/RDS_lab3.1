@@ -14,6 +14,7 @@ import org.jxmpp.stringprep.XmppStringprepException;
 import org.jxmpp.jid.impl.JidCreate;
 
 import java.io.IOException;
+import java.io.InvalidObjectException;
 import java.util.*;
 /**
  * @author LPELCRACK896
@@ -266,7 +267,11 @@ public class XMPPNode {
         else{
             System.out.println("Mensage redirigido a "+to+" desde "+this.JID);
             MessagePacket msgPacket = new MessagePacket(from, to, payload, hopCount+1);
-            xmppChatUsingTable(to, msgPacket.toString());
+            switch (mode){
+                case "dv"-> xmppChatUsingTable(getNameFromJIDWithDomain(to), msgPacket.toString());
+                case "lsr"-> xmppChatUsingDijkstraTable(getNameFromJIDWithDomain(to), msgPacket.toString());
+            }
+
         }
     }
 
@@ -300,17 +305,40 @@ public class XMPPNode {
         }
         try {
             String aliasDestination = getAliasFromJID(toJID);
-            Route routeToDestintion =  this.infoPackage.findRoute(aliasDestination);
-            if (!routeToDestintion.isExist()){
+            Route routeToDestination =  this.infoPackage.findRoute(aliasDestination);
+            if (!routeToDestination.isExist()){
                 return;
             }
-            String aliasNextHop = routeToDestintion.getNextHop();
+            String aliasNextHop = routeToDestination.getNextHop();
             String JIDNextHop = getJIDFromAlias(aliasNextHop);
             Chat chat = chatManager.chatWith(JidCreate.entityBareFrom(JIDNextHop));
             chat.send(body);
         } catch (SmackException.NotConnectedException | InterruptedException | XmppStringprepException e) {
             System.err.println("Error sending message: " + e.getMessage());
         }
+    }
+
+
+    public void xmppChatUsingDijkstraTable(String toJID, String body){
+        toJID = reRouteDijkstra(toJID);
+        toJID = !toJID.contains("@alumchat.xyz") ? toJID+"@alumchat.xyz": toJID;
+        if (chatManager == null) {
+            ChatManager.getInstanceFor(connection);
+        }
+        try {
+            Chat chat = chatManager.chatWith(JidCreate.entityBareFrom(getNameFromJIDWithDomain(toJID)));
+            chat.send(body);
+        } catch (SmackException.NotConnectedException | InterruptedException | XmppStringprepException e) {
+            System.err.println("Error sending message: " + e.getMessage());
+        }
+    }
+
+    public String reRouteDijkstra(String targetJID){
+        String domainJID = !targetJID.contains("@alumchat.xyz") ? targetJID+"@alumchat.xyz": targetJID;
+        String alias = getAliasFromJID(domainJID);
+        String nextHop = dijkstraTable.get(alias);
+        return getJIDFromAlias(nextHop); // Next hop according to table
+
     }
 
     /**
@@ -347,7 +375,16 @@ public class XMPPNode {
         xmppChatUsingTable(getNameFromJIDWithDomain(toJID), infoPacket.toString());
     }
 
+    /**
+     *  Sends message package
+     * @param toJID receiver JID
+     * @param hopCount number of hops so far
+     * @param body content of message packet
+     * @param useRouting to either use routing or send directly
+     */
     public void sendMessagePackage(String toJID, int hopCount, String body, boolean useRouting){
+        toJID = !toJID.contains("@alumchat.xyz") ? toJID+"@alumchat.xyz": toJID;
+
         msgPacket.setHopCount(hopCount);
         msgPacket.setTo(toJID);
         msgPacket.setBody(body);
@@ -356,11 +393,21 @@ public class XMPPNode {
             xmppChatDirect(getNameFromJIDWithDomain(toJID), msgPacket.toString());
             return;
         }
+        switch (mode){
+            case "dv"-> xmppChatUsingTable(toJID, msgPacket.toString());
+            case "lsr"-> xmppChatUsingDijkstraTable(toJID, msgPacket.toString());
+        }
         xmppChatUsingTable(getNameFromJIDWithDomain(toJID), msgPacket.toString());
 
 
     }
 
+    /**
+     * Find out if the info package was recieved before on tables buffer, if not saves it. Otherwise, it won't.
+     * @param packetToSave The packet to check if its being here before
+     * @param alias The alias of the owner of the packet.
+     * @return True in case it saves the packet, false in case it was found in buffer.
+     */
     public boolean saveTable(InfoPacket packetToSave, String alias){
 
         for (Map.Entry<String, InfoPacket> entry: this.tablesBuffer.entrySet()){
@@ -374,7 +421,32 @@ public class XMPPNode {
         return true;
     }
 
+    public void setUpDijkstraTable(){
+        addOwnTableToBuffer();
+        if (this.tablesBuffer.size()!=this.networkMembers.size()){
+            System.out.println("Unable to setup dijkstra table, doesnt have all nodes info.");
+            return;
+        }
 
+        MatrixTopology matrixTopology = new MatrixTopology(this.networkMembers);
+
+        for (Map.Entry<String, InfoPacket> entry:this.tablesBuffer.entrySet())
+        {
+            String alias = entry.getKey();
+            InfoPacket packet = entry.getValue();
+            matrixTopology.establishConnections(alias, InfoPacket.getSimplifiedTable(packet.getRoutingTable()));
+        }
+        HashMap<String, List<String>> nodePaths = matrixTopology.dijkstra(this.alias);
+        for (String node: networkMembers){
+            List<String> pathToNode = nodePaths.get(node);
+            if (node.equals(this.alias)){
+                this.dijkstraTable.put(node, node);
+            }else{
+                this.dijkstraTable.put(node, pathToNode.get(1));
+            }
+        }
+
+    }
     /*
      * #################
      * #################
@@ -489,6 +561,15 @@ public class XMPPNode {
     private ArrayList<String> extractNetworkMembers(){
         Set<String> networkMembersKeySet = namesConfig.keySet();
         return new ArrayList<String>(networkMembersKeySet);
+    }
+
+    /**
+     * Adds own table to buffer in case it doesn't have it.
+     */
+    private void addOwnTableToBuffer(){
+        if (!this.tablesBuffer.containsKey(this.alias)){
+            this.tablesBuffer.put(this.alias, this.infoPackage);
+        }
     }
 
     /*
