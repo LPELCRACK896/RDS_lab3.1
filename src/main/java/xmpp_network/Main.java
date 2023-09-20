@@ -13,7 +13,7 @@ public class Main {
 
         HashMap<String, List<String>> topologyConfig = Utils.getTopologyConfig();
         HashMap<String, String> namesConfig  = Utils.getNamesConfig();
-        String mode = "lsr";
+        String mode = "dv";
 
         XMPPNode node = new XMPPNode("gon20008", "admin123", topologyConfig, namesConfig, mode);
         node.setUseAliasOnEcho(true);

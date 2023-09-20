@@ -113,6 +113,11 @@ public class XMPPNode {
         }
     }
 
+    public void flood2(String message, String detination){
+        for (String neighbor: neighbors){
+            String destination = getJIDFromAlias(neighbor);
+        }
+    }
     /**
      * Logs in XMPP server
      * @param JID JID to log in.
@@ -179,6 +184,7 @@ public class XMPPNode {
      * @param response The message received from some other node.
      */
     private void executeResponse(JsonObject response) {
+        System.out.println("GOT "+response.getAsString());
         String type = response.get("type").getAsString();
         switch (type) {
             case "echo" ->  echoResponseHandler(response);
