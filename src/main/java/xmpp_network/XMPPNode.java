@@ -34,6 +34,7 @@ public class XMPPNode {
     private HashMap<String, String> dijkstraTable;
     private HashMap<String, InfoPacket> tablesBuffer;
     private HashMap<String, List<String>> topologyConfig;
+    private boolean useAliasOnEcho;
 
     /**
      * Constructor
@@ -56,6 +57,7 @@ public class XMPPNode {
         this.alias = figureOutOwnAlias();
         this.neighbors = figureOutNeighbors();
         this.connection = createConnection();
+        this.useAliasOnEcho = false;
 
 
         this.infoPackage = new InfoPacket(getNameFromJIDWithDomain(this.JID), getAliasFromJID(this.JID));
@@ -82,8 +84,9 @@ public class XMPPNode {
     public void configureNode(){
         for (String neighbor: neighbors){
             String destination = getJIDFromAlias(neighbor);
-            EchoPacket echoPacket = new EchoPacket(JID, destination);
-            xmppChatDirect(destination, echoPacket.toString());
+            String sender = useAliasOnEcho ? getAliasFromJID(this.JID + "alumchat.xyz"): this.JID;
+            EchoPacket echoPacket = new EchoPacket(sender, destination);
+            xmppChatDirect(destination, echoPacket.toString(), useAliasOnEcho);
         }
     }
 
@@ -192,24 +195,43 @@ public class XMPPNode {
         JsonObject payload = response.get("payload").getAsJsonObject();
         JsonObject headers = response.get("headers").getAsJsonObject();
 
+
+
         String sender = getNameFromJIDWithDomain(headers.get("from").getAsString());
         String reciever = getNameFromJIDWithDomain(headers.get("to").getAsString());
+        boolean usesAlias = this.networkMembers.contains(sender);
 
         boolean hasTimestamp2 = payload.has("timestamp2");
+        boolean validTimestamp2 = hasTimestamp2 && (!payload.get("timestamp2").getAsString().isEmpty());
+
         // Receives as a ping response
-        if (hasTimestamp2) {
+        if (validTimestamp2) {
+
+
             long timeStamp1 = payload.get("timestamp1").getAsLong();
             long timeStamp2 = payload.get("timestamp2").getAsLong();
             long difference = timeStamp2 - timeStamp1;
-            String alias = getAliasFromJID(sender);
+
+            String theJID;
+            String alias;
+            if (usesAlias){
+                alias = sender;
+                theJID = getJIDFromAlias(alias);
+
+            }else{
+                theJID = sender;
+                alias = getAliasFromJID(sender);
+            }
             boolean isNeighbor =  neighbors.contains(alias);
             this.infoPackage.editARoute(alias, alias, difference, isNeighbor);
             return;
         }
-
+        System.out.println("Recibio echo: "+response);
         long timeStamp1 = payload.get("timestamp1").getAsLong();
         EchoPacket echoPacket = new EchoPacket(reciever, sender, timeStamp1);
-        xmppChatDirect(sender, echoPacket.toString());
+        String jid = useAliasOnEcho ? getJIDFromAlias(sender) : sender;
+
+        xmppChatDirect(sender, echoPacket.toString(), usesAlias);
 
     }
 
@@ -260,7 +282,7 @@ public class XMPPNode {
         int hopCount = response.get("headers").getAsJsonObject().get("hop_count").getAsInt();
         String payload = response.get("payload").getAsString();
 
-        if (to.equals(this.JID)){
+        if (getNameFromJIDWithDomain(to).equals(this.JID)){
             System.out.println(to+" recibió de "+from+" tras "+hopCount+" saltos");
             System.out.println(payload);
         }
@@ -280,10 +302,11 @@ public class XMPPNode {
      * @param toJID target JID node.
      * @param body content of message.
      */
-    public void xmppChatDirect(String toJID, String body) {
+    public void xmppChatDirect(String toJID, String body, boolean useAlias) {
+        toJID = useAlias ? getJIDFromAlias(toJID): toJID;
         toJID = !toJID.contains("@alumchat.xyz") ? toJID+"@alumchat.xyz": toJID;
         if (chatManager == null) {
-            ChatManager.getInstanceFor(connection);
+            chatManager = ChatManager.getInstanceFor(connection);
         }
         try {
             Chat chat = chatManager.chatWith(JidCreate.entityBareFrom(toJID));
@@ -301,7 +324,7 @@ public class XMPPNode {
     public void xmppChatUsingTable(String toJID, String body){
         toJID = !toJID.contains("@alumchat.xyz") ? toJID+"@alumchat.xyz": toJID;
         if (chatManager == null) {
-            ChatManager.getInstanceFor(connection);
+            chatManager = ChatManager.getInstanceFor(connection);
         }
         try {
             String aliasDestination = getAliasFromJID(toJID);
@@ -311,6 +334,7 @@ public class XMPPNode {
             }
             String aliasNextHop = routeToDestination.getNextHop();
             String JIDNextHop = getJIDFromAlias(aliasNextHop);
+            JIDNextHop = !JIDNextHop.contains("@alumchat.xyz") ? JIDNextHop+"@alumchat.xyz": JIDNextHop;
             Chat chat = chatManager.chatWith(JidCreate.entityBareFrom(JIDNextHop));
             chat.send(body);
         } catch (SmackException.NotConnectedException | InterruptedException | XmppStringprepException e) {
@@ -323,10 +347,11 @@ public class XMPPNode {
         toJID = reRouteDijkstra(toJID);
         toJID = !toJID.contains("@alumchat.xyz") ? toJID+"@alumchat.xyz": toJID;
         if (chatManager == null) {
-            ChatManager.getInstanceFor(connection);
+            chatManager =  ChatManager.getInstanceFor(connection);
         }
         try {
-            Chat chat = chatManager.chatWith(JidCreate.entityBareFrom(getNameFromJIDWithDomain(toJID)));
+
+            Chat chat = chatManager.chatWith(JidCreate.entityBareFrom(toJID));
             chat.send(body);
         } catch (SmackException.NotConnectedException | InterruptedException | XmppStringprepException e) {
             System.err.println("Error sending message: " + e.getMessage());
@@ -351,7 +376,7 @@ public class XMPPNode {
         infoPackage.setTo(toJID);
         infoPackage.setHopCount(hopCount);
         if (!useRouting) {
-            xmppChatDirect(getNameFromJIDWithDomain(toJID), infoPackage.toString());
+            xmppChatDirect(getNameFromJIDWithDomain(toJID), infoPackage.toString(), false);
             return;
         }
         xmppChatUsingTable(getNameFromJIDWithDomain(toJID), infoPackage.toString());
@@ -369,7 +394,7 @@ public class XMPPNode {
         infoPacket.setTo(toJID);
         infoPacket.setHopCount(hopCount);
         if (!useRouting) {
-            xmppChatDirect(getNameFromJIDWithDomain(toJID), infoPacket.toString());
+            xmppChatDirect(getNameFromJIDWithDomain(toJID), infoPacket.toString(), false);
             return;
         }
         xmppChatUsingTable(getNameFromJIDWithDomain(toJID), infoPacket.toString());
@@ -390,7 +415,7 @@ public class XMPPNode {
         msgPacket.setBody(body);
 
         if(!useRouting){
-            xmppChatDirect(getNameFromJIDWithDomain(toJID), msgPacket.toString());
+            xmppChatDirect(getNameFromJIDWithDomain(toJID), msgPacket.toString(), false);
             return;
         }
         switch (mode){
@@ -610,5 +635,13 @@ public class XMPPNode {
      */
     public void setMode(String mode) {
         this.mode = mode;
+    }
+
+    public String getJID() {
+        return JID;
+    }
+
+    public void setJID(String JID) {
+        this.JID = JID;
     }
 }
