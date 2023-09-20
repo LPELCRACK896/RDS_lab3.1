@@ -83,8 +83,9 @@ public class XMPPNode {
      */
     public void configureNode(){
         for (String neighbor: neighbors){
-            String destination = getJIDFromAlias(neighbor);
-            String sender = useAliasOnEcho ? getAliasFromJID(this.JID + "alumchat.xyz"): this.JID;
+            String destination = !useAliasOnEcho? getJIDFromAlias(neighbor):neighbor;
+            String destinationAlias = useAliasOnEcho?neighbor: getAliasFromJID(neighbor);
+            String sender = useAliasOnEcho ? getAliasFromJID(this.JID ): this.JID;
             EchoPacket echoPacket = new EchoPacket(sender, destination);
             xmppChatDirect(destination, echoPacket.toString(), useAliasOnEcho);
         }
@@ -166,6 +167,8 @@ public class XMPPNode {
                 ChatManager chatManager = ChatManager.getInstanceFor(connection);
                 chatManager.addIncomingListener((from, message, chat) -> {
                     String response = message.getBody();
+                    System.out.println("Recibo crudo: ");
+                    System.out.println(response);
                     JsonObject newJSON = JsonParser.parseString(response).getAsJsonObject();
                     this.executeResponse(newJSON);
                 });
