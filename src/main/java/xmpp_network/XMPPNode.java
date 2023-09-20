@@ -1,5 +1,6 @@
 package xmpp_network;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.jivesoftware.smack.AbstractXMPPConnection;
@@ -187,10 +188,16 @@ public class XMPPNode {
      * @param response The message received from some other node.
      */
     private void executeResponse(JsonObject response) {
-        System.out.println("GOT "+response.getAsString());
+        JsonElement responseElement = response.get("response");
+        if (responseElement.isJsonPrimitive()) {
+            System.out.println("GOT " + responseElement.getAsString());
+        } else {
+            System.out.println("GOT a non-primitive JSON element");
+        }
+
         String type = response.get("type").getAsString();
         switch (type) {
-            case "echo" ->  echoResponseHandler(response);
+            case "echo" -> echoResponseHandler(response);
             case "message" -> messageResponseHandler(response);
             case "info" -> infoResponseHandler(response);
         }
@@ -416,6 +423,14 @@ public class XMPPNode {
      * @param body content of message packet
      * @param useRouting to either use routing or send directly
      */
+
+    public void sendMessage(String message) {
+        for(String item: this.neighbors) {
+            this.sendMessagePackage(this.namesConfig.get(item), 1, message, false);
+        }
+    }
+
+
     public void sendMessagePackage(String toJID, int hopCount, String body, boolean useRouting){
         toJID = !toJID.contains("@alumchat.xyz") ? toJID+"@alumchat.xyz": toJID;
 

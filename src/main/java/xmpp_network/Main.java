@@ -1,5 +1,6 @@
 package xmpp_network;
 
+import com.sun.source.tree.Scope;
 import jdk.jshell.execution.Util;
 
 import java.util.HashMap;
@@ -9,13 +10,14 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) throws InterruptedException {
         Scanner scanner = new Scanner(System.in);
+        Scanner scanner1 = new Scanner(System.in);
         String input;
 
         HashMap<String, List<String>> topologyConfig = Utils.getTopologyConfig();
         HashMap<String, String> namesConfig  = Utils.getNamesConfig();
         String mode = "dv";
 
-        XMPPNode node = new XMPPNode("gon20008", "admin123", topologyConfig, namesConfig, mode);
+        XMPPNode node = new XMPPNode("lop20768", "Axel.129", topologyConfig, namesConfig, mode);
         node.setUseAliasOnEcho(true);
         while (true) {
             System.out.println("Intruccion: ");
@@ -24,7 +26,10 @@ public class Main {
             switch (input) {
                 case "flood" -> node.flood();
                 case "echo" -> node.configureNode();
-
+                case "message" -> {
+                    String message = scanner1.nextLine();
+                    node.sendMessage(message);
+                }
             }
 
 
