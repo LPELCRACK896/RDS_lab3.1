@@ -15,10 +15,17 @@ public class Main {
         HashMap<String, String> namesConfig  = Utils.getNamesConfig();
         String mode = "lsr";
 
-        XMPPNode node2 = new XMPPNode("gon20008", "admin123", topologyConfig, namesConfig, mode);
-
+        XMPPNode node = new XMPPNode("gon20008", "admin123", topologyConfig, namesConfig, mode);
+        node.setUseAliasOnEcho(true);
         while (true) {
+            System.out.println("Intruccion: ");
+            input = scanner.nextLine();
 
+            switch (input) {
+                case "flood" -> node.flood();
+                case "echo" -> node.configureNode();
+
+            }
 
 
         }

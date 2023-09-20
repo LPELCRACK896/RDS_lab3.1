@@ -644,4 +644,12 @@ public class XMPPNode {
     public void setJID(String JID) {
         this.JID = JID;
     }
+
+    public boolean isUseAliasOnEcho() {
+        return useAliasOnEcho;
+    }
+
+    public void setUseAliasOnEcho(boolean useAliasOnEcho) {
+        this.useAliasOnEcho = useAliasOnEcho;
+    }
 }
