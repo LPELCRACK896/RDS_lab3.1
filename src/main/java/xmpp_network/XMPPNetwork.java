@@ -29,7 +29,7 @@ public class XMPPNetwork {
         }
         System.out.println(Colors.cyanText("Finalizo inicalizaciones de nodos"));
         System.out.println(Colors.cyanText("Esperando respuestas por 10 segundos"));
-        nothingForAWhile(10000);
+        nothingForAWhile(1000);
     }
 
     /**

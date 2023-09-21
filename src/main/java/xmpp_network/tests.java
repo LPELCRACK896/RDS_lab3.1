@@ -35,19 +35,19 @@ public class tests {
         xmppNodes.add( new XMPPNode("test20004", "admin123", topologyConfig, namesConfig, mode));
         xmppNodes.add( new XMPPNode("test20005", "admin123", topologyConfig, namesConfig, mode));
         xmppNodes.add( new XMPPNode("test20006", "admin123", topologyConfig, namesConfig, mode));
-
+        Thread.sleep(3000);
 
         XMPPNetwork network = new XMPPNetwork(xmppNodes, mode);
         network.configureNodes();
-        Thread.sleep(15000);
+        Thread.sleep(5000);
         network.routing();
 
 
-        Thread.sleep(15000);
+        Thread.sleep(10000);
         int i = 0;
         for (XMPPNode node1: xmppNodes){
             System.out.println("Nodo "+i+":");
-            System.out.println(node1.getInfoPackage());
+            System.out.println(node1.getRouteInfo());
             i++;
         }
         XMPPNode node = xmppNodes.get(0);

@@ -397,7 +397,13 @@ public class XMPPNode {
         }
         switch (mode){
             case "dv"-> xmppChatUsingTable(toJID, msgPacket.toString());
-            case "lsr"-> xmppChatUsingDijkstraTable(toJID, msgPacket.toString());
+            case "lsr"-> {
+                if (!isValidDijkstraTable()){
+                    System.out.println(Colors.yellowText("No es posible enviar el mensaje por dijstra por falta de informacion"));
+                    xmppChatDirect(toJID, msgPacket.toString());
+                }
+                xmppChatUsingDijkstraTable(toJID, msgPacket.toString());
+            }
         }
         xmppChatUsingTable(getNameFromJIDWithDomain(toJID), msgPacket.toString());
 
@@ -423,6 +429,14 @@ public class XMPPNode {
         return true;
     }
 
+    public boolean isValidDijkstraTable(){
+        // Doesn't have enough info.
+        if (this.tablesBuffer.size()!=this.networkMembers.size()){
+            return false;
+        }
+        // Is not initialized. Probably related to previous condition.
+        return !this.dijkstraTable.isEmpty();
+    }
     public void setUpDijkstraTable(){
         addOwnTableToBuffer();
         if (this.tablesBuffer.size()!=this.networkMembers.size()){
@@ -612,5 +626,12 @@ public class XMPPNode {
      */
     public void setMode(String mode) {
         this.mode = mode;
+    }
+
+    public String getRouteInfo(){
+        if (mode.equals("lsr")) {
+            return dijkstraTable.toString();
+        }
+        return infoPackage.toString();
     }
 }
