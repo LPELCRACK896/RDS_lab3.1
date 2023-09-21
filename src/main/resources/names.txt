@@ -1,0 +1,9 @@
+{
+    "type":"names",
+    "config": 
+    {
+        "A": "lop12345@alumchat.xyz",
+        "B": "gon12345@alumchat.xyz",
+        "C": "rui12345@alumchat.xyz"
+    }
+}
