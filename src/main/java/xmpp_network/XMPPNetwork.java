@@ -49,7 +49,7 @@ public class XMPPNetwork {
     private void linkStateRouting(){
         // Flooding
         for (XMPPNode node: xmppNodes){
-            node.flood();
+            node.floodInfoHops();
         }
         nothingForAWhile(5000);
         for (XMPPNode node: xmppNodes){

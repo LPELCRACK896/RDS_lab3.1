@@ -23,23 +23,23 @@ public class tests {
 
         EchoPacket echoPacketSecond = new EchoPacket("gon20008", "test20002", System.currentTimeMillis());
 
-        String mode = "lsr"; // Either "dv" or "lsr"
+        String mode = "dv"; // Either "dv" or "lsr"
 
         ArrayList<XMPPNode> xmppNodes = new ArrayList<>();
 
 
-        xmppNodes.add( new XMPPNode("gon20008", "admin123", topologyConfig, namesConfig, mode));
+        //xmppNodes.add( new XMPPNode("gon20008", "admin123", topologyConfig, namesConfig, mode));
         xmppNodes.add( new XMPPNode("test20001", "admin123", topologyConfig, namesConfig, mode));
         xmppNodes.add( new XMPPNode("test20002", "admin123", topologyConfig, namesConfig, mode));
         xmppNodes.add( new XMPPNode("test20003", "admin123", topologyConfig, namesConfig, mode));
-        xmppNodes.add( new XMPPNode("test20004", "admin123", topologyConfig, namesConfig, mode));
-        xmppNodes.add( new XMPPNode("test20005", "admin123", topologyConfig, namesConfig, mode));
-        xmppNodes.add( new XMPPNode("test20006", "admin123", topologyConfig, namesConfig, mode));
+        //xmppNodes.add( new XMPPNode("test20004", "admin123", topologyConfig, namesConfig, mode));
+        //xmppNodes.add( new XMPPNode("test20005", "admin123", topologyConfig, namesConfig, mode));
+        //xmppNodes.add( new XMPPNode("test20006", "admin123", topologyConfig, namesConfig, mode));
         Thread.sleep(3000);
 
         XMPPNetwork network = new XMPPNetwork(xmppNodes, mode);
         network.configureNodes();
-        Thread.sleep(5000);
+        Thread.sleep(20000);
         network.routing();
 
 
@@ -57,19 +57,19 @@ public class tests {
             input = scanner.nextLine();
 
             switch (input) {
-                case "flood" -> node.flood();
+                case "flood" -> node.floodInfoHops();
                 case "echo" -> node.configureNode();
             }
+            for (XMPPNode node_i: xmppNodes){
+                node_i.setUpDijkstraTable();
+            }
             System.out.print("Ingrese la tecla q para salir: ");
-
-
-            input = scanner.nextLine();
-
 
             if ("q".equalsIgnoreCase(input)) {
                 System.out.println("Has presionado la tecla 'q'. Saliendo...");
                 break;
             }
+
         }
         //scanner.close();
 

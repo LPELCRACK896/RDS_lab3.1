@@ -14,7 +14,6 @@ import org.jxmpp.stringprep.XmppStringprepException;
 import org.jxmpp.jid.impl.JidCreate;
 
 import java.io.IOException;
-import java.io.InvalidObjectException;
 import java.util.*;
 /**
  * @author LPELCRACK896
@@ -82,7 +81,7 @@ public class XMPPNode {
     public void configureNode(){
         for (String neighbor: neighbors){
             String destination = getJIDFromAlias(neighbor);
-            EchoPacket echoPacket = new EchoPacket(JID, destination);
+            EchoPacket echoPacket = new EchoPacket(alias, neighbor);
             xmppChatDirect(destination, echoPacket.toString());
         }
     }
@@ -100,7 +99,7 @@ public class XMPPNode {
     /**
      * Sends the table to the neighbors with hops enough to flood the network.
      */
-    public void flood(){
+    public void floodInfoHops(){
         Set<String> networkMembers = namesConfig.keySet();
         ArrayList<String> arraylistNetworkMembers = new ArrayList<String>(networkMembers);
 
@@ -110,6 +109,12 @@ public class XMPPNode {
         }
     }
 
+    /**
+     * Sends to neighbours
+     */
+    public void floodAllWaysMessage(){
+
+    }
     /**
      * Logs in XMPP server
      * @param JID JID to log in.
@@ -193,8 +198,11 @@ public class XMPPNode {
         JsonObject payload = response.get("payload").getAsJsonObject();
         JsonObject headers = response.get("headers").getAsJsonObject();
 
-        String sender = getNameFromJIDWithDomain(headers.get("from").getAsString());
-        String reciever = getNameFromJIDWithDomain(headers.get("to").getAsString());
+        String aliasSender = headers.get("from").getAsString();
+        String aliasReceiver =headers.get("to").getAsString();
+
+        String sender = getJIDFromAlias(aliasSender);
+        String receiver = getJIDFromAlias(aliasReceiver);
 
         boolean hasTimestamp2 = payload.has("timestamp2");
         // Receives as a ping response
@@ -202,14 +210,13 @@ public class XMPPNode {
             long timeStamp1 = payload.get("timestamp1").getAsLong();
             long timeStamp2 = payload.get("timestamp2").getAsLong();
             long difference = timeStamp2 - timeStamp1;
-            String alias = getAliasFromJID(sender);
-            boolean isNeighbor =  neighbors.contains(alias);
-            this.infoPackage.editARoute(alias, alias, difference, isNeighbor);
+            boolean isNeighbor =  neighbors.contains(aliasSender);
+            this.infoPackage.editARoute(aliasSender, aliasSender, difference, isNeighbor);
             return;
         }
 
         long timeStamp1 = payload.get("timestamp1").getAsLong();
-        EchoPacket echoPacket = new EchoPacket(reciever, sender, timeStamp1);
+        EchoPacket echoPacket = new EchoPacket(aliasReceiver, aliasSender, timeStamp1);
         xmppChatDirect(sender, echoPacket.toString());
 
     }
@@ -398,11 +405,13 @@ public class XMPPNode {
         switch (mode){
             case "dv"-> xmppChatUsingTable(toJID, msgPacket.toString());
             case "lsr"-> {
-                if (!isValidDijkstraTable()){
+                if (!areBufferTablesComplete()){
                     System.out.println(Colors.yellowText("No es posible enviar el mensaje por dijstra por falta de informacion"));
                     xmppChatDirect(toJID, msgPacket.toString());
                 }
-                xmppChatUsingDijkstraTable(toJID, msgPacket.toString());
+                else {
+                    xmppChatUsingDijkstraTable(toJID, msgPacket.toString());
+                }
             }
         }
         xmppChatUsingTable(getNameFromJIDWithDomain(toJID), msgPacket.toString());
@@ -429,18 +438,15 @@ public class XMPPNode {
         return true;
     }
 
-    public boolean isValidDijkstraTable(){
+    public boolean isDijkstraTableFull(){
         // Doesn't have enough info.
-        if (this.tablesBuffer.size()!=this.networkMembers.size()){
-            return false;
-        }
+        return this.tablesBuffer.size() == this.networkMembers.size();
         // Is not initialized. Probably related to previous condition.
-        return !this.dijkstraTable.isEmpty();
     }
     public void setUpDijkstraTable(){
         addOwnTableToBuffer();
-        if (this.tablesBuffer.size()!=this.networkMembers.size()){
-            System.out.println(Colors.yellowText("Unable to setup dijkstra table, doesnt have all nodes info."));
+        if (!areBufferTablesComplete()){
+            System.out.println(Colors.yellowText(JID+" unable to setup dijkstra table, doesnt have all nodes info."));
             return;
         }
 
@@ -461,7 +467,7 @@ public class XMPPNode {
                 this.dijkstraTable.put(node, pathToNode.get(1));
             }
         }
-
+        System.out.println(Colors.greenText(JID+" configuró correctamente dijsktra"));
     }
     /*
      * #################
@@ -470,6 +476,25 @@ public class XMPPNode {
      * #################
      * #################
      */
+
+    public boolean areBufferTablesComplete(){
+        if (!isDijkstraTableFull()) return false;
+
+        for (Map.Entry<String, List<String>> nodeConfig: topologyConfig.entrySet()){
+            List<String> expectedConnections = nodeConfig.getValue();
+            InfoPacket currentInfo = tablesBuffer.get(nodeConfig.getKey());
+            for(String nodeToConnect: expectedConnections){
+                Route routToNodeToConnect = currentInfo.findRoute(nodeToConnect);
+                if (routToNodeToConnect==null) return false;
+                if (!routToNodeToConnect.isExist()) return false;
+            }
+        }
+        for (Map.Entry<String, InfoPacket> entryInfo: tablesBuffer.entrySet()){
+
+        }
+
+        return true;
+    }
 
     /**
      * Based on name topology and its own JID figure out its name on graph.

@@ -47,7 +47,7 @@ public class EchoPacket extends Packet{
         return "{" +
                 "\"type\": \"echo\""+",\n"+
                 "\"headers\": {\"from\":\""+super.from+"\",\"to\":\""+super.to+"\"},\n"+
-                "\"payload\": {\"timestamp1\": "+timestamp1+", \"timestamp2\": "+timestamp2+"}"+
+                "\"payload\": {\"timestamp1\": \""+timestamp1+"\", \"timestamp2\": \""+timestamp2+"\"}"+
                 '}';
     }
 
@@ -59,7 +59,7 @@ public class EchoPacket extends Packet{
         return "{" +
                 "\"type\": \"echo\""+",\n"+
                 "\"headers\": {\"from\":\""+super.from+"\",\"to\":\""+super.to+"\"},\n"+
-                "\"payload\": {\"timestamp1\": "+timestamp1+" }"+
+                "\"payload\": {\"timestamp1\": \""+timestamp1+"\" }"+
                 '}';
     }
 

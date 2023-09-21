@@ -1,12 +1,9 @@
 {
-  "type": "names",
+  "type":"names",
   "config":{
-    "A": "gon20008@alumchat.xyz",
-    "B": "test20001@alumchat.xyz",
-    "C": "test20002@alumchat.xyz",
-    "D": "test20003@alumchat.xyz",
-    "E": "test20004@alumchat.xyz",
-    "F": "test20005@alumchat.xyz",
-    "G": "test20006@alumchat.xyz"
+    "A": "test20001@alumchat.xyz",
+    "B": "test20002@alumchat.xyz",
+    "C": "test20003@alumchat.xyz"
+
   }
 }
