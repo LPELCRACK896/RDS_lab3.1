@@ -244,6 +244,8 @@ public class XMPPNode {
 
         if (mode.equals("dv")){
             infoPackage.updateTable(othersTable, aliasFrom);
+        }else{
+            setUpDijkstraTable();
         }
 
         hopCount -= 1;
