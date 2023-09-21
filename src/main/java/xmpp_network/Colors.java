@@ -11,35 +11,35 @@ public class Colors {
     public static final String ANSI_CYAN = "\u001B[36m";
     public static final String ANSI_WHITE = "\u001B[37m";
 
-    public String blackText(String text) {
+    public static String blackText(String text) {
         return ANSI_BLACK + text + ANSI_RESET;
     }
 
-    public String redText(String text) {
+    public static String redText(String text) {
         return ANSI_RED + text + ANSI_RESET;
     }
 
-    public String greenText(String text) {
+    public static String greenText(String text) {
         return ANSI_GREEN + text + ANSI_RESET;
     }
 
-    public String yellowText(String text) {
+    public static String yellowText(String text) {
         return ANSI_YELLOW + text + ANSI_RESET;
     }
 
-    public String blueText(String text) {
+    public static String blueText(String text) {
         return ANSI_BLUE + text + ANSI_RESET;
     }
 
-    public String purpleText(String text) {
+    public static String purpleText(String text) {
         return ANSI_PURPLE + text + ANSI_RESET;
     }
 
-    public String cyanText(String text) {
+    public static String cyanText(String text) {
         return ANSI_CYAN + text + ANSI_RESET;
     }
 
-    public String whiteText(String text) {
+    public static String whiteText(String text) {
         return ANSI_WHITE + text + ANSI_RESET;
     }
 }
