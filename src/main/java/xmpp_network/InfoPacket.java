@@ -1,5 +1,6 @@
 package xmpp_network;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -152,7 +153,7 @@ public class InfoPacket extends Packet{
             }
         }
         else{
-            System.err.println("No es posible utilizar la tabla para actualizar");
+            System.out.println(Colors.yellowText("No es posible utilizar la tabla para actualizar"));
         }
 
         System.out.println("La tabla de "+this.aliasOwner+ " actualizo "+totalUpdates+" en su tabla");

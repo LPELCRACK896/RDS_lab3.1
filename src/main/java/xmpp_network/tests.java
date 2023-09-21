@@ -23,7 +23,7 @@ public class tests {
 
         EchoPacket echoPacketSecond = new EchoPacket("gon20008", "test20002", System.currentTimeMillis());
 
-        String mode = "dv"; // Either "dv" or "lsr"
+        String mode = "lsr"; // Either "dv" or "lsr"
 
         ArrayList<XMPPNode> xmppNodes = new ArrayList<>();
 
@@ -48,6 +48,7 @@ public class tests {
         for (XMPPNode node1: xmppNodes){
             System.out.println("Nodo "+i+":");
             System.out.println(node1.getInfoPackage());
+            i++;
         }
         XMPPNode node = xmppNodes.get(0);
         node.sendMessagePackage("test20003", 0, "Hoola", true);

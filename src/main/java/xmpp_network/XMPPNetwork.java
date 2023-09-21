@@ -1,5 +1,6 @@
 package xmpp_network;
 
+import java.awt.*;
 import java.util.ArrayList;
 /**
  * @author LPELCRACK896
@@ -26,8 +27,8 @@ public class XMPPNetwork {
             node.setMode(mode);
             node.configureNode();
         }
-        System.out.println("Finalizo inicalizaciones de nodos");
-        System.out.println("Esperando respuestas por 10 segundos");
+        System.out.println(Colors.cyanText("Finalizo inicalizaciones de nodos"));
+        System.out.println(Colors.cyanText("Esperando respuestas por 10 segundos"));
         nothingForAWhile(10000);
     }
 

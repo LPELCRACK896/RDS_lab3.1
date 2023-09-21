@@ -121,6 +121,7 @@ public class XMPPNode {
                 connection.connect();
             }
             connection.login(JID, password);
+            System.out.println(Colors.greenText(JID+" logged in successfully."));
             this.isLoggedIn = true;
 
         } catch (XMPPException | SmackException | InterruptedException | IOException e) {
@@ -231,7 +232,7 @@ public class XMPPNode {
 
         boolean recievedBefore = this.saveTable(recievedPacket, aliasFrom);
         if (recievedBefore){
-            System.out.println(this.JID + " recibio un paquete repetido de "+from);
+            System.out.println(Colors.purpleText(this.JID + " recibio un paquete repetido de "+from));
         }
 
         if (mode.equals("dv")){
@@ -260,7 +261,7 @@ public class XMPPNode {
         int hopCount = response.get("headers").getAsJsonObject().get("hop_count").getAsInt();
         String payload = response.get("payload").getAsString();
 
-        if (to.equals(this.JID)){
+        if (getNameFromJIDWithDomain(to).equals(this.JID)){
             System.out.println(to+" recibió de "+from+" tras "+hopCount+" saltos");
             System.out.println(payload);
         }
@@ -311,6 +312,7 @@ public class XMPPNode {
             }
             String aliasNextHop = routeToDestination.getNextHop();
             String JIDNextHop = getJIDFromAlias(aliasNextHop);
+            JIDNextHop = !JIDNextHop.contains("alumchat.xyz")? JIDNextHop+"@alumchat.xyz":JIDNextHop;
             Chat chat = chatManager.chatWith(JidCreate.entityBareFrom(JIDNextHop));
             chat.send(body);
         } catch (SmackException.NotConnectedException | InterruptedException | XmppStringprepException e) {
@@ -326,7 +328,7 @@ public class XMPPNode {
             ChatManager.getInstanceFor(connection);
         }
         try {
-            Chat chat = chatManager.chatWith(JidCreate.entityBareFrom(getNameFromJIDWithDomain(toJID)));
+            Chat chat = chatManager.chatWith(JidCreate.entityBareFrom(toJID));
             chat.send(body);
         } catch (SmackException.NotConnectedException | InterruptedException | XmppStringprepException e) {
             System.err.println("Error sending message: " + e.getMessage());
@@ -424,7 +426,7 @@ public class XMPPNode {
     public void setUpDijkstraTable(){
         addOwnTableToBuffer();
         if (this.tablesBuffer.size()!=this.networkMembers.size()){
-            System.out.println("Unable to setup dijkstra table, doesnt have all nodes info.");
+            System.out.println(Colors.yellowText("Unable to setup dijkstra table, doesnt have all nodes info."));
             return;
         }
 
