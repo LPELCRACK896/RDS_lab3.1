@@ -65,16 +65,13 @@ public class XMPPClient {
 
             // Creamos la conexión
             connection = new XMPPTCPConnection(config);
-            connection.connect();
 
-            registerMessageListener(stanza -> {
-                if (stanza instanceof Message) {
-                    Message message = (Message) stanza;
-                    String notification = message.getBody();
-                    if (notification != null) {
-                        //System.out.println("Notificacion de mensaje" + notification); Descomentar para ver que se recibe.
-                        receiveMessage(notification);
-                    }
+            connection.connect();
+            ChatManager chatManager = ChatManager.getInstanceFor(connection);
+            chatManager.addIncomingListener((from, message, chat) -> {
+                String notification = message.getBody();
+                if (notification != null) {
+                    receiveMessage(notification);
                 }
             });
 
@@ -269,7 +266,9 @@ public class XMPPClient {
                 String destinatario = nombres.get(to);
                 String mensaje = construirMensaje("info", this.node, this.namesTabla[i], 1, tablaEnrutamiento, null);
                 sendMessage(destinatario, mensaje);
-//                System.out.println("Mensaje enviado: " + mensaje); //Descomentar para ver que json se esta enviando
+
+                //System.out.println(destinatario);
+                //System.out.println("Mensaje enviado: " + mensaje); //Descomentar para ver que json se esta enviando
                 System.out.println("Se envió actualización de nodo a: " + this.namesTabla[i]);
             }
         }
