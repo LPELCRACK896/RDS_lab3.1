@@ -13,8 +13,11 @@ import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jxmpp.stringprep.XmppStringprepException;
 import org.jxmpp.jid.impl.JidCreate;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
+
 /**
  * @author LPELCRACK896
  */
@@ -260,6 +263,7 @@ public class XMPPNode {
 
         if (mode.equals("dv")){
             synchronized(this) {
+                System.out.println(Colors.purpleText("DV: "+this.JID+ " recibio info.  "+from));
                 infoPackage.updateTable(othersTable, aliasFrom);
             }
         }else{
