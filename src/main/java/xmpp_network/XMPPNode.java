@@ -96,6 +96,13 @@ public class XMPPNode {
         }
     }
 
+    public void sendMessageUsingNeighbors(String message, String toJID){
+        for (String neighbor: neighbors){
+            String destination = getJIDFromAlias(neighbor);
+            sendMessagePackageThroughNeighbor(destination, toJID, networkMembers.size(), message, true);
+        }
+    }
+
     /**
      * Sends the table to the neighbors with hops enough to flood the network.
      */
@@ -109,11 +116,13 @@ public class XMPPNode {
         }
     }
 
-    /**
-     * Sends to neighbours
-     */
-    public void floodAllWaysMessage(){
 
+    public void floodAllWaysMessage(String message){
+        for (String node: networkMembers){ // Se lo manda a todos
+            String destJID = getJIDFromAlias(node);
+            sendMessageUsingNeighbors(message, destJID);
+
+        }
     }
     /**
      * Logs in XMPP server
@@ -204,6 +213,8 @@ public class XMPPNode {
         String sender = getJIDFromAlias(aliasSender);
         String receiver = getJIDFromAlias(aliasReceiver);
 
+        System.out.println(Colors.cyanText("\n"+JID+"recibio echo de"+sender+"\n"));
+
         boolean hasTimestamp2 = payload.has("timestamp2");
         // Receives as a ping response
         if (hasTimestamp2) {
@@ -211,7 +222,9 @@ public class XMPPNode {
             long timeStamp2 = payload.get("timestamp2").getAsLong();
             long difference = timeStamp2 - timeStamp1;
             boolean isNeighbor =  neighbors.contains(aliasSender);
-            this.infoPackage.editARoute(aliasSender, aliasSender, difference, isNeighbor);
+            synchronized(this) {
+                this.infoPackage.editARoute(aliasSender, aliasSender, difference, isNeighbor);
+            }
             return;
         }
 
@@ -232,6 +245,9 @@ public class XMPPNode {
         HashMap<String, Long> othersTable = parseJsonTable(response.get("payload").getAsJsonObject());
         String aliasFrom = getAliasFromJID(from);
 
+        System.out.println(Colors.cyanText("\n"+JID+" recibio echo de "+from+"\n"));
+
+
         InfoPacket recievedPacket = new InfoPacket(from, aliasFrom);
         Set<String> networkMembers = namesConfig.keySet();
         ArrayList<String> arraylistNetworkMembers = new ArrayList<String>(networkMembers);
@@ -243,9 +259,13 @@ public class XMPPNode {
         }
 
         if (mode.equals("dv")){
-            infoPackage.updateTable(othersTable, aliasFrom);
+            synchronized(this) {
+                infoPackage.updateTable(othersTable, aliasFrom);
+            }
         }else{
-            setUpDijkstraTable();
+            synchronized(this) {
+                setUpDijkstraTable();
+            }
         }
 
         hopCount -= 1;
@@ -269,13 +289,14 @@ public class XMPPNode {
         String to = response.get("headers").getAsJsonObject().get("to").getAsString();
         int hopCount = response.get("headers").getAsJsonObject().get("hop_count").getAsInt();
         String payload = response.get("payload").getAsString();
+        System.out.println(Colors.cyanText("\n"+JID+" recibio echo de "+from+"\n"));
 
         if (getNameFromJIDWithDomain(to).equals(this.JID)){
-            System.out.println(to+" recibió de "+from+" tras "+hopCount+" saltos");
-            System.out.println(payload);
+            System.out.println(to+" recibió de "+from+" tras "+hopCount+" saltos: ");
+            System.out.println(Colors.blueText(payload));
         }
         else{
-            System.out.println("Mensage redirigido a "+to+" desde "+this.JID);
+            System.out.println("Hop hacia "+to+" desde "+this.JID+" (mensaje de: "+from+" )");
             MessagePacket msgPacket = new MessagePacket(from, to, payload, hopCount+1);
             switch (mode){
                 case "dv"-> xmppChatUsingTable(getNameFromJIDWithDomain(to), msgPacket.toString());
@@ -421,6 +442,35 @@ public class XMPPNode {
 
     }
 
+
+    public void sendMessagePackageThroughNeighbor(String neighborJID,String toJID, int hopCount, String body, boolean useRouting ){
+        toJID = !toJID.contains("@alumchat.xyz") ? toJID+"@alumchat.xyz": toJID;
+        neighborJID = !neighborJID.contains("@alumchat.xyz") ? neighborJID+"@alumchat.xyz": neighborJID;
+
+        msgPacket.setHopCount(hopCount);
+        msgPacket.setTo(toJID);
+        msgPacket.setBody(body);
+
+        if(!useRouting){
+            xmppChatDirect(getNameFromJIDWithDomain(neighborJID), msgPacket.toString());
+            return;
+        }
+        switch (mode){
+            case "dv"-> xmppChatUsingTable(neighborJID, msgPacket.toString());
+            case "lsr"-> {
+                if (!areBufferTablesComplete()){
+                    System.out.println(Colors.yellowText("No es posible enviar el mensaje por dijstra por falta de informacion"));
+                    xmppChatDirect(neighborJID, msgPacket.toString());
+                }
+                else {
+                    xmppChatUsingDijkstraTable(neighborJID, msgPacket.toString());
+                }
+            }
+        }
+        xmppChatUsingTable(getNameFromJIDWithDomain(neighborJID), msgPacket.toString());
+
+
+    }
     /**
      * Find out if the info package was recieved before on tables buffer, if not saves it. Otherwise, it won't.
      * @param packetToSave The packet to check if its being here before

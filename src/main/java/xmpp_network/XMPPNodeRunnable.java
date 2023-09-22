@@ -13,7 +13,7 @@ public class XMPPNodeRunnable implements Runnable {
         while (running) {
             xmppNode.configureNode(); // or any other method
             try {
-                Thread.sleep(1000); // sleep for some time, for example, 1000 milliseconds
+                Thread.sleep(5000); // sleep for some time, for example, 1000 milliseconds
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt(); // Restore the interrupted status
                 break;

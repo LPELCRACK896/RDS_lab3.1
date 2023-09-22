@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
-public class mainNode1 {
+public class mainNode3 {
     public static void main(String[] args) {
 
         // System
@@ -16,14 +16,14 @@ public class mainNode1 {
         HashMap<String, String> namesConfig  = Utils.getNamesConfig();
 
         // User
-        String user = "test20001";
+        String user = "test20003";
         String password = "admin123";
         String message;
         String destJID;
 
         XMPPNode node = new XMPPNode(user, password, topologyConfig, namesConfig, mode);
         XMPPNodeRunnable runnable = new XMPPNodeRunnable(node);
-        ///runnable.run(); // Manda echos constantemente
+        //runnable.run(); // Manda echos constantemente
         boolean exit = false;
 
         while (!exit){
@@ -31,10 +31,10 @@ public class mainNode1 {
 
             System.out.print(
                     "- Ingrese \"flood message\" para enviar un mensaje a todos." +
-                    "\n- Ingrese \"flood info\" para enviar la información del nodo." +
-                    "\n- Ingrese \"message\" para enviar mensaje"+
-                    "\n- Ingrese \"ping\" para mandar echo a vecinos"+
-                    "\n- Ingrese la tecla q para salir: ");
+                            "\n- Ingrese \"flood info\" para enviar la información del nodo." +
+                            "\n- Ingrese \"message\" para enviar mensaje"+
+                            "\n- Ingrese \"ping\" para mandar echo a vecinos"+
+                            "\n- Ingrese la tecla q para salir: ");
             input = scanner.nextLine();
             switch (input.toLowerCase()){
                 case "flood message"->{
@@ -54,7 +54,6 @@ public class mainNode1 {
                 }
                 case "ping"->{
                     node.configureNode();
-
                 }
                 case "q"-> {
                     System.out.println("Has presionado la tecla 'q'. Saliendo...");
